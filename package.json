@@ -1,5 +1,27 @@
 {
   "name": "reduy",
   "version": "0.0.0",
-  "license": "MIT"
+  "main": "dist/reduy.umd.js",
+  "files": [
+    "dist"
+  ],
+  "author": "ryym <ryym.64@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryym/reduy"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "lint": "tslint  --project tsconfig.json 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rm -rf dist",
+    "build": "tsc --module commonjs",
+    "start": "tsc -w"
+  },
+  "devDependencies": {
+    "tslint": "^5.12.0",
+    "typescript": "^3.2.2"
+  }
 }

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es6",
+    "module":"es2015",
+    "strict": true,
+    "sourceMap": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "declarationDir": "dist/types",
+    "outDir": "dist/lib"
+  },
+  "include": ["src"],
+  "exclude": ["**/*_test.ts"]
+}
+
