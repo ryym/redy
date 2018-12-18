@@ -32,6 +32,9 @@
       "git add"
     ]
   },
+  "dependencies": {
+    "redux": "^4.0.1"
+  },
   "devDependencies": {
     "@types/jest": "^23.3.10",
     "husky": "^1.2.1",
