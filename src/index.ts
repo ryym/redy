@@ -1,9 +1,9 @@
 import {Middleware, Reducer, AnyAction, Store, Dispatch} from 'redux';
 
-type ReduyAction<P> = {
+type RedyAction<P> = {
   type: string;
   payload?: P;
-  meta: {reduy: boolean; [key: string]: any; [key: number]: any};
+  meta: {redy: boolean; [key: string]: any; [key: number]: any};
 };
 
 type AnyPayloadAction<P> = AnyAction & {payload?: P};
@@ -39,13 +39,13 @@ export const defineReducer = <S>(initialState: S, mappings: ReducerDef<S, any>[]
 
 export type DispatchCmd = <A extends any[], T>(command: Command<A, T>, ...args: A) => unknown;
 
-export const isReduyAction = (action: AnyAction): action is ReduyAction<any> => {
-  return action.meta && action.meta.reduy;
+export const isRedyAction = (action: AnyAction): action is RedyAction<any> => {
+  return action.meta && action.meta.redy;
 };
 
 export const wrapDispatcher = <S>(dispatch: Dispatch): DispatchCmd => (command, ...args) => {
   const payload = command(...args);
-  return dispatch({type: command.name, payload, meta: {reduy: true}});
+  return dispatch({type: command.name, payload, meta: {redy: true}});
 };
 
 export type EffectRunner<S, T> = (payload: T, dispatch: DispatchCmd, getState: () => S) => any;
@@ -87,7 +87,7 @@ export const effectMiddleware = <S>(...defGroups: EffectDefs<S>[]): Middleware<{
   return ({dispatch, getState}) => {
     const dispatchCmd = wrapDispatcher(dispatch);
     return next => action => {
-      if (action != null && isReduyAction(action)) {
+      if (action != null && isRedyAction(action)) {
         const result = next(action);
         const runner = runners[action.type];
         const effectResult = runner ? runner(action.payload, dispatchCmd, getState) : null;

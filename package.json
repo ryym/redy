@@ -1,14 +1,14 @@
 {
-  "name": "reduy",
+  "name": "redy",
   "version": "0.0.0",
-  "main": "dist/reduy.umd.js",
+  "main": "dist/redy.umd.js",
   "files": [
     "dist"
   ],
   "author": "ryym <ryym.64@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ryym/reduy"
+    "url": "https://github.com/ryym/redy"
   },
   "license": "MIT",
   "engines": {
