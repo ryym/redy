@@ -17,7 +17,8 @@
   "scripts": {
     "lint": "tslint  --project tsconfig.json 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rm -rf dist",
-    "build": "tsc --module commonjs",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
     "start": "tsc -w",
     "test": "jest"
   },
