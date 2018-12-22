@@ -6,7 +6,6 @@
     "strict": true,
     "sourceMap": true,
     "declaration": true,
-    "experimentalDecorators": true,
     "declarationDir": "dist/types",
     "outDir": "dist/lib"
   },
