@@ -1,8 +1,8 @@
 import {createStore, AnyAction, applyMiddleware} from 'redux';
-import {defineReducer, on, wrapDispatcher, defineEffects, handle, effectMiddleware} from './';
+import {action, defineReducer, on, defineEffects, handle, effectMiddleware} from './redy';
 
-const Increment = (n: number) => n;
-const IncrementOne = () => {};
+const Increment = action('INCREMENT', (n: number) => n);
+const IncrementOne = action('INCREMENT_ONE', () => {});
 
 const initialState = {count: 0};
 
@@ -36,8 +36,8 @@ const store = createStore(reducer, applyMiddleware(effectMiddleware(effects), lo
 
 console.log(store.getState());
 
-const dispatchCommand = wrapDispatcher(store.dispatch);
-console.log(dispatchCommand(Increment, 1));
+// const dispatchCommand = wrapDispatcher(store.dispatch);
+console.log(store.dispatch(Increment(1)));
 
 console.log(store.dispatch({type: 'HOGE'}));
 
