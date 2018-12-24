@@ -79,7 +79,11 @@ export const isRedyAction = (action: AnyAction): action is RedyAction<any> => {
   return action.meta && action.meta.redy;
 };
 
-export type EffectRunner<S, T> = (payload: T, dispatch: Dispatch, getState: () => S) => any;
+export type EffectRunner<S, T, R = any> = (payload: T, dispatch: Dispatch, getState: () => S) => R;
+
+export type Effect<S, A, R = void> = A extends ActionCreator<any, infer P>
+  ? EffectRunner<S, P, R>
+  : EffectRunner<S, any, R>;
 
 export type EffectDef<S, T> = {
   creator: ActionCreator<any, T>;

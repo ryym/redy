@@ -1,5 +1,13 @@
 import {createStore, AnyAction, applyMiddleware} from 'redux';
-import {action, defineReducer, on, defineEffects, handle, effectMiddleware} from './redy';
+import {
+  action,
+  defineReducer,
+  on,
+  defineEffects,
+  handle,
+  effectMiddleware,
+  Effect as RedyEffect,
+} from './redy';
 
 const Increment = action('INCREMENT', (n: number) => n);
 const IncrementOne = action('INCREMENT_ONE', () => {});
@@ -16,11 +24,22 @@ const reducer = defineReducer(initialState, [
   })),
 ]);
 
+type Effect<P, R = any> = RedyEffect<typeof initialState, P, R>;
+
+const print: Effect<typeof Increment> = async (n, dispatch, getState) => {
+  console.log('HELLO', getState(), n + 1);
+};
+
+const print2 = (): Effect<typeof Increment> => (n, dispatch, getState) => {
+  console.log('HELLO', getState(), n + 1);
+};
+
 const effects = defineEffects([
-  handle(Increment, async n => {
-    console.log('HELLO', n);
-    return 10;
-  }),
+  handle(Increment, print),
+  // handle(Increment, async n => {
+  //   console.log('HELLO', n);
+  //   return 10;
+  // }),
 ]);
 
 const logger = (store: any) => (next: any) => (action: any) => {
