@@ -2,6 +2,7 @@
   "name": "redy",
   "version": "0.0.0",
   "main": "dist/lib/redy.js",
+  "typings": "dist/types/redy.d.ts",
   "files": [
     "dist"
   ],
