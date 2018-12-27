@@ -83,7 +83,7 @@ export type EffectRunner<S, T, R = any> = (payload: T, dispatch: Dispatch, getSt
 
 export type Effect<S, A, R = void> = A extends ActionCreator<any, infer P>
   ? EffectRunner<S, P, R>
-  : EffectRunner<S, any, R>;
+  : EffectRunner<S, A, R>;
 
 export type EffectDef<S, T> = {
   creator: ActionCreator<any, T>;
