@@ -29,7 +29,7 @@ export const action = <A extends any[], T>(
 export type StateUpdater<S, T> = (state: S, args: T) => S;
 
 export type ReducerDef<S, T> = {
-  creator: ActionCreator<any, T>;
+  creators: ActionCreator<any, T>[];
   updater: StateUpdater<S, T>;
 };
 
@@ -37,8 +37,22 @@ export const on = <S, T>(
   creator: ActionCreator<any, T>,
   updater: StateUpdater<S, T>,
 ): ReducerDef<S, T> => {
-  return {creator, updater};
+  return {creators: [creator], updater};
 };
+
+export function onAny<S, T1, T2>(
+  creators: [ActionCreator<any, T1>, ActionCreator<any, T2>],
+  updater: StateUpdater<S, T1 | T2>,
+): ReducerDef<S, T1 | T2>;
+
+export function onAny<S, T1, T2, T3>(
+  creators: [ActionCreator<any, T1>, ActionCreator<any, T2>, ActionCreator<any, T3>],
+  updater: StateUpdater<S, T1 | T2 | T3>,
+): ReducerDef<S, T1 | T2 | T3>;
+
+export function onAny(creators: any, updater: any) {
+  return {creators, updater};
+}
 
 // XXX: Unfortunately TS 3.2 does not support Symbol index type.
 // https://github.com/Microsoft/TypeScript/issues/1863
@@ -65,8 +79,10 @@ export const defineReducer = <S>(
 ): Reducer<S> => {
   const handlers = new CreatorMap<StateUpdater<S, any>>();
 
-  definitions.forEach(({creator, updater}) => {
-    handlers.setValue(creator, updater);
+  definitions.forEach(({creators, updater}) => {
+    creators.forEach(creator => {
+      handlers.setValue(creator, updater);
+    });
   });
 
   return (state = initialState, action) => {
