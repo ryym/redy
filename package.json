@@ -1,0 +1,42 @@
+{
+  "name": "redy",
+  "version": "0.0.0",
+  "main": "dist/lib/redy.js",
+  "typings": "dist/types/redy.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "ryym <ryym.64@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryym/redy"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "tsc -w",
+    "test": "jest"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.5",
+    "prettier": "^1.16.4",
+    "typescript": "^3.3.3333"
+  }
+}
