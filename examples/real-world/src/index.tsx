@@ -5,8 +5,6 @@ import {createBrowserHistory} from 'history';
 import {configureStore} from './store';
 import {App} from './components/App';
 
-import './lib/api';
-
 const history = createBrowserHistory();
 const store = configureStore(history);
 

@@ -9,9 +9,12 @@ import {
   FetchStarredOk,
   FetchStargazers,
   FetchStargazersOk,
+  FetchStargazersStart,
 } from '../../actions';
 import {getUser, getRepo} from '../selectors';
 import * as api from '../../lib/api';
+import {getStargazersPagination} from '../repos/selectors';
+import {getStarredPagination} from '../users/selectors';
 
 export const fetchUser = (
   d = {
@@ -39,19 +42,25 @@ export const fetchStarred = (
   d = {
     fetchStarred: api.fetchStarred,
   },
-): Effect<typeof FetchStarred> => async ({login, nextPageUrl}, dispatch) => {
-  const result = await d.fetchStarred(login, nextPageUrl);
-  console.log('STARRED', result);
-  dispatch(FetchStarredOk(result));
+): Effect<typeof FetchStarred> => async ({login, nextPageUrl}, dispatch, getState) => {
+  const pg = getStarredPagination(getState(), login);
+  if (!pg || pg.pageCount === 0 || nextPageUrl) {
+    const result = await d.fetchStarred(login, nextPageUrl);
+    dispatch(FetchStarredOk(result));
+  }
 };
 
 export const fetchStargazers = (
   d = {
     fetchStargazers: api.fetchStargazers,
   },
-): Effect<typeof FetchStargazers> => async ({fullName, nextPageUrl}, dispatch) => {
-  const result = await d.fetchStargazers(fullName, nextPageUrl);
-  dispatch(FetchStargazersOk(result));
+): Effect<typeof FetchStargazers> => async ({fullName, nextPageUrl}, dispatch, getState) => {
+  const pg = getStargazersPagination(getState(), fullName);
+  if (!pg || pg.pageCount === 0 || nextPageUrl) {
+    dispatch(FetchStargazersStart(fullName));
+    const result = await d.fetchStargazers(fullName, nextPageUrl);
+    dispatch(FetchStargazersOk(result));
+  }
 };
 
 export const githubEffects = () => {

@@ -7,40 +7,23 @@ import {
   FetchStarredOk,
   FetchStargazersOk,
 } from '../../actions';
-import {Pagination, newPagination, startFetch, finishFetch} from '../../lib/pagination';
-import {normalizeKey} from '../../lib/normalizers';
+import {startFetch, finishFetch} from '../../lib/pagination';
+import {githubResources as resources} from '../../lib/normalized-resources';
 
-export const usersReducer = defineReducer<UsersState>({}, [
-  on(FetchUserOk, (users, user) => ({
-    ...users,
-    [user.login]: user,
-  })),
+export const usersReducer = defineReducer<UsersState>(resources.init(), [
+  on(FetchUserOk, (users, user) => resources.add(users, user.login, user)),
 
-  on(FetchRepoOk, (users, {owner}) => ({
-    ...users,
-    [owner.login]: owner,
-  })),
+  on(FetchRepoOk, (users, {owner}) => resources.add(users, owner.login, owner)),
 
-  onAny([FetchStarredOk, FetchStargazersOk], (users, {entities}) => ({
-    ...users,
-    ...entities.users,
-  })),
+  onAny([FetchStarredOk, FetchStargazersOk], (users, {entities}) =>
+    resources.merge(users, entities.users),
+  ),
 ]);
 
-export const starredReducer = defineReducer<StarredState>({}, [
-  on(FetchStarred, (starred, {login}) => {
-    login = normalizeKey(login);
-    return {
-      ...starred,
-      [login]: startFetch(starred[login]),
-    };
-  }),
+export const starredReducer = defineReducer<StarredState>(resources.init(), [
+  on(FetchStarred, (starred, {login}) => resources.update(starred, login, startFetch)),
 
-  on(FetchStarredOk, (starred, {login, repoFullNames, nextPageUrl}) => {
-    login = normalizeKey(login);
-    return {
-      ...starred,
-      [login]: finishFetch(starred[login], repoFullNames, nextPageUrl),
-    };
-  }),
+  on(FetchStarredOk, (starred, {login, repoFullNames, nextPageUrl}) =>
+    resources.update(starred, login, pg => finishFetch(pg!, repoFullNames, nextPageUrl)),
+  ),
 ]);

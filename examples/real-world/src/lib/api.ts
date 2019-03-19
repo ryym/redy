@@ -65,9 +65,7 @@ const fetchData = async <D = any>(url: string): Promise<ApiResponse<D>> => {
   }
 
   const data = (await res.json()) as D;
-  console.log('get next page url start');
   const nextPageUrl = getNextPageUrl(res);
-  console.log('get next page url end');
   return {data, nextPageUrl};
 };
 

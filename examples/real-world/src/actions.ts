@@ -7,6 +7,8 @@ export const Search = action('SEARCH', (path: string) => path);
 
 export const FetchUser = action('FETCH_USER', (login: string) => ({login}));
 
+// export const FetchUserStart = action('FETCH_USER_START', (login: string) => ({login}));
+
 export const FetchUserOk = action('FETCH_USER_OK', (user: User) => user);
 
 export const FetchRepo = action('FETCH_REPO', (fullName: string) => ({fullName}));
@@ -23,6 +25,11 @@ export const FetchStarredOk = action('FETCH_STARRED_OK', (result: StarredRepos) 
 export const FetchStargazers = action(
   'FETCH_STARGAZERS',
   (fullName: string, nextPageUrl?: string) => ({fullName, nextPageUrl}),
+);
+
+export const FetchStargazersStart = action(
+  'FETCH_STARGAZERS_START',
+  (fullName: string) => fullName,
 );
 
 export const FetchStargazersOk = action('FETCH_STARGAZERS_OK', (result: Stargazers) => result);

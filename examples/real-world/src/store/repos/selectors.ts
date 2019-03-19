@@ -1,18 +1,18 @@
 import {State} from '../../state';
 import {Repo, User} from '../../lib/models';
 import {Pagination} from '../../lib/pagination';
-import {normalizeKey} from '../../lib/normalizers';
+import {githubResources} from '../../lib/normalized-resources';
 import {getUser} from '../users/selectors';
 
 export const getRepo = (state: State, fullName: string): Repo | null => {
-  return state.repos[normalizeKey(fullName)] || null;
+  return githubResources.getValue(state.repos, fullName);
 };
 
 export const getStargazersPagination = (
   state: State,
   fullName: string,
 ): Pagination<string> | null => {
-  return state.stargazers[normalizeKey(fullName)] || null;
+  return githubResources.getValue(state.stargazers, fullName);
 };
 
 export const getStargazers = (state: State, fullName: string): User[] => {

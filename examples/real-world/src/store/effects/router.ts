@@ -5,7 +5,6 @@ import {Search} from '../../actions';
 
 export const updatePath = (history: History): Effect<typeof Search> => {
   return path => {
-    console.log('UPDATE PATH', path);
     history.push(`/${path}`);
   };
 };

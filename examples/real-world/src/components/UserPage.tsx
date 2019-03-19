@@ -22,8 +22,21 @@ export type WrapperProps = Readonly<{
   match: Match<{login: string}>;
 }>;
 
-export class UserPageView extends React.Component<WithDispatch<Props>> {
+export type AllProps = WithDispatch<Props>;
+
+export class UserPageView extends React.Component<AllProps> {
   componentDidMount() {
+    this.loadUserData();
+  }
+
+  componentDidUpdate(prev: AllProps) {
+    if (prev.login !== this.props.login) {
+      this.loadUserData();
+    }
+  }
+
+  // XXX: 既にデータがあるのに読み込んじゃう
+  loadUserData() {
     const {login, dispatch} = this.props;
     dispatch(FetchUser(login));
     dispatch(FetchStarred(login));

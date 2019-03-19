@@ -1,5 +1,6 @@
 import {User, Repo} from './lib/models';
 import {Pagination} from './lib/pagination';
+import {MapRef} from './lib/normalized-resources';
 
 export type State = Readonly<{
   query: string;
@@ -9,18 +10,10 @@ export type State = Readonly<{
   stargazers: StargazersState;
 }>;
 
-export type UsersState = {
-  [login: string]: User;
-};
+export type UsersState = MapRef<User>;
 
-export type ReposState = {
-  [fullName: string]: Repo;
-};
+export type ReposState = MapRef<Repo>;
 
-export type StarredState = {
-  [login: string]: Pagination<string>;
-};
+export type StarredState = MapRef<Pagination<string>>;
 
-export type StargazersState = {
-  [fullName: string]: Pagination<string>;
-};
+export type StargazersState = MapRef<Pagination<string>>;

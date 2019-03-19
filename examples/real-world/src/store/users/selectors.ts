@@ -1,15 +1,15 @@
 import {State} from '../../state';
 import {User, RepoWithOwner} from '../../lib/models';
 import {Pagination} from '../../lib/pagination';
-import {normalizeKey} from '../../lib/normalizers';
+import {githubResources} from '../../lib/normalized-resources';
 import {getRepo} from '../repos/selectors';
 
 export const getUser = (state: State, login: string): User | null => {
-  return state.users[normalizeKey(login)] || null;
+  return githubResources.getValue(state.users, login);
 };
 
 export const getStarredPagination = (state: State, login: string): Pagination<string> | null => {
-  return state.starred[normalizeKey(login)] || null;
+  return githubResources.getValue(state.starred, login);
 };
 
 export const getStarredRepos = (state: State, login: string): RepoWithOwner[] => {

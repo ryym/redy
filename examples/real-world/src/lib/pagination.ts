@@ -26,5 +26,5 @@ export const finishFetch = <ID>(
   isFetching: false,
   nextPageUrl,
   pageCount: pg.pageCount + 1,
-  ids: [...pg.ids, ...ids],
+  ids: [...new Set([...pg.ids, ...ids])],
 });
