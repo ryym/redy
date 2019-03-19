@@ -2,13 +2,13 @@
   "name": "real-world",
   "version": "0.1.0",
   "private": true,
+  "//": [
+    "NOTE1: You need to link redy to run this example.",
+    "NOTE2: We use react, react-redux, and redux from the root node_modules",
+    "to avoid having two copies of React (https://github.com/facebook/react/issues/15050)"
+  ],
   "dependencies": {
-    "@types/jest": "24.0.11",
     "@types/node": "11.11.3",
-    "@types/react": "16.8.8",
-    "@types/react-dom": "16.8.2",
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4",
     "react-scripts": "2.1.8",
     "typescript": "3.3.3333"
   },
