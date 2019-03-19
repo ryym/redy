@@ -13,12 +13,29 @@ export type ActionCreator<A extends any[], P> = {
 
 export type RedyAction<A extends any[], P> = {
   type: string;
-  payload: {
+  payload: P;
+  promise: Promise<Resolved<P>>;
+  meta: {
+    redy: boolean;
+    creator: ActionCreator<A, P>;
     args: A;
-    creator: (...args: A) => P;
+    [key: string]: any;
+    [key: number]: any;
   };
-  meta: {redy: boolean; [key: string]: any; [key: number]: any};
 };
+
+export type Dispatch = <A extends any[], P>(
+  action: ActionCreator<A, P>,
+  ...args: A
+) => RedyAction<A, P>;
+
+export type Thunk<S, R = void, C = undefined> = (
+  dispatch: Dispatch,
+  getState: () => S,
+  context?: C,
+) => Promise<R>;
+
+export type Resolved<P> = P extends Thunk<any, infer R> ? R : P;
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
 
@@ -52,43 +69,42 @@ export const defineReducer = <S>(
   };
 };
 
-export type DispatchResult<P, R> = {
-  type: string;
-  payload: P;
-  promise: Promise<R>;
-};
+export const isThunk = (payload: any): payload is Thunk<any, any, any> =>
+  typeof payload === 'function';
 
-export type Dispatch = <A extends any[], P>(
-  action: ActionCreator<A, P>,
-  ...args: A
-) => P extends Thunk<any, infer R> ? DispatchResult<P, R> : DispatchResult<P, P>;
-
-export const makeRedyAction = <A extends any[], P>(
+export const toAction = <A extends any[], P>(
   creator: ActionCreator<A, P>,
   ...args: A
 ): RedyAction<A, P> => {
-  return {
-    type: creator.name,
-    payload: {args, creator},
-
-    meta: {redy: true},
-  };
+  const payload = creator(...args);
+  if (isThunk(payload)) {
+    return {
+      type: creator.name,
+      payload,
+      promise: Promise.reject(
+        'Please use redyMiddleware. Otherwise thunk actions have no effects.',
+      ),
+      meta: {redy: true, creator, args},
+    };
+  } else {
+    return {
+      type: creator.name,
+      payload,
+      promise: Promise.resolve(payload as Resolved<P>),
+      meta: {redy: true, creator, args},
+    };
+  }
 };
 
 export const wrapDispatch = (dispatch: ReduxDispatch): Dispatch => {
-  return (creator, ...args) => {
-    const action = makeRedyAction(creator, ...args);
-
-    // XXX: We cannot statically type this return type.
-    return dispatch(action) as any;
-  };
+  return (creator, ...args) => dispatch(toAction(creator, ...args));
 };
 
 export const isRedyAction = (action: AnyAction): action is RedyAction<any, any> => {
   return action.meta && action.meta.redy;
 };
 
-export const redyMiddleware = (/* context */): Middleware<{}, any, ReduxDispatch> => {
+export const redyMiddleware = <C>(context?: C): Middleware<{}, any, ReduxDispatch> => {
   return <S>({dispatch, getState}: MiddlewareAPI<ReduxDispatch, S>) => {
     const wrappedDispatch = wrapDispatch(dispatch);
     return next => action => {
@@ -96,29 +112,15 @@ export const redyMiddleware = (/* context */): Middleware<{}, any, ReduxDispatch
         return next(action);
       }
 
-      const {creator, args} = action.payload;
-      const actualPayload = creator(...args);
-
-      if (typeof actualPayload === 'function') {
-        const promise = actualPayload(wrappedDispatch, getState, undefined);
+      if (isThunk(action.payload)) {
+        const promise = action.payload(wrappedDispatch, getState, context);
         return {
-          type: action.type,
-          payload: actualPayload,
-          promise,
+          ...action,
+          promise: action.promise.catch(() => {}).then(() => promise),
         };
       } else {
-        return next({
-          type: action.type,
-          payload: actualPayload,
-          promise: Promise.resolve(actualPayload),
-        });
+        return next(action);
       }
     };
   };
 };
-
-export type Thunk<S, R = void, C = undefined> = (
-  dispatch: Dispatch,
-  getState: () => S,
-  context?: C,
-) => Promise<R>;

@@ -41,8 +41,8 @@ console.log(dispatch(Increment, 1));
 
 console.log(dispatch(IncrementAsync, 100, 1000));
 
-dispatch(Increment, 3).promise.then(n => console.log('show', n));
-dispatch(IncrementAsync, 100, 0).promise.then(ar => console.log('show', ar[0]));
+dispatch(Increment, 3).promise.then(n => console.log('show-------------', n));
+dispatch(IncrementAsync, 50, 300).promise.then(ar => console.log('show===================', ar[0]));
 
 // console.log(dispatch(Increment, 3));
 
