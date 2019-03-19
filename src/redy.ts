@@ -77,23 +77,17 @@ export const toAction = <A extends any[], P>(
   ...args: A
 ): RedyAction<A, P> => {
   const payload = creator(...args);
-  if (isThunk(payload)) {
-    return {
-      type: creator.name,
-      payload,
-      promise: Promise.reject(
-        'Please use redyMiddleware. Otherwise thunk actions have no effects.',
-      ),
-      meta: {redy: true, creator, args},
-    };
-  } else {
-    return {
-      type: creator.name,
-      payload,
-      promise: Promise.resolve(payload as Resolved<P>),
-      meta: {redy: true, creator, args},
-    };
-  }
+
+  let promise = isThunk(payload)
+    ? Promise.reject('Please use redyMiddleware. Otherwise thunk actions have no effects.')
+    : Promise.resolve(payload as Resolved<P>);
+
+  return {
+    type: creator.name,
+    payload,
+    promise,
+    meta: {redy: true, creator, args},
+  };
 };
 
 export const wrapDispatch = (dispatch: ReduxDispatch): Dispatch => {
