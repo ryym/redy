@@ -7,7 +7,8 @@
     "sourceMap": true,
     "declaration": true,
     "declarationDir": "dist/types",
-    "outDir": "dist/lib"
+    "outDir": "dist/lib",
+    "jsx": "react"
   },
   "include": ["src"],
   "exclude": ["**/*_test.ts"]
