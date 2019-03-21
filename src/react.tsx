@@ -1,6 +1,11 @@
 import * as React from 'react';
 import {Store, Dispatch as ReduxDispatch} from 'redux';
-import {Provider as ReduxProvider, ReactReduxContext} from 'react-redux';
+import {
+  Provider as ReduxProvider,
+  ReactReduxContext,
+  ConnectedComponentClass,
+  connect as reduxConnect,
+} from 'react-redux';
 import {Dispatch, wrapDispatch} from './redy';
 
 const RedyContext = React.createContext<Dispatch | null>(null);
@@ -30,7 +35,7 @@ export const Provider = ({store, children}: ProviderProps) => {
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-export function withDispatcher<P extends {dispatch: Dispatch}, K extends keyof P>(
+export function withDispatcher<P extends {dispatch?: Dispatch}, K extends keyof P>(
   Component: React.ComponentType<P>,
 ): React.ComponentType<Omit<P, 'dispatch'>> {
   return (props: Omit<P, 'dispatch'>) => {
@@ -41,5 +46,16 @@ export function withDispatcher<P extends {dispatch: Dispatch}, K extends keyof P
 
     const propsWithDispatch = {...props, dispatch} as P;
     return <Component {...propsWithDispatch} />;
+  };
+}
+
+// XXX: react-redux's connect is too complicated.
+export function connect<P, State, OwnProps>(
+  mapStateToProps: (state: State, ownProps: OwnProps) => P,
+) {
+  return <C extends React.ComponentType<P & {dispatch: Dispatch}>>(
+    component: C,
+  ): ConnectedComponentClass<C, OwnProps> => {
+    return reduxConnect(mapStateToProps)(withDispatcher(component) as any) as any;
   };
 }

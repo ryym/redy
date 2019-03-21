@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {createStore, applyMiddleware} from 'redux';
-import {connect} from 'react-redux';
-import {defineReducer, on, redyMiddleware, Dispatch, Thunk, withDispatcher, Provider} from 'redy';
+import {defineReducer, on, redyMiddleware, Dispatch, Thunk, connect, Provider} from 'redy';
 
 const Increment = (n: number) => n;
 
@@ -35,7 +34,7 @@ const Counter = function(props: Props) {
   );
 };
 
-const ConnectedCounter = connect((n: number) => ({count: n}))(withDispatcher(Counter));
+const ConnectedCounter = connect((n: number) => ({count: n}))(Counter);
 
 ReactDOM.render(
   <Provider store={store}>
