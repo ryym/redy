@@ -51,6 +51,30 @@ export const on = <S, P>(
   return {creators: [creator], updater};
 };
 
+export function onAny<S, T1, T2>(
+  creators: [ActionCreator<any, T1>, ActionCreator<any, T2>],
+  updater: StateUpdater<S, T1 | T2>,
+): ReducerDef<S, T1 | T2>;
+
+export function onAny<S, T1, T2, T3>(
+  creators: [ActionCreator<any, T1>, ActionCreator<any, T2>, ActionCreator<any, T3>],
+  updater: StateUpdater<S, T1 | T2 | T3>,
+): ReducerDef<S, T1 | T2 | T3>;
+
+export function onAny<S, T1, T2, T3, T4>(
+  creators: [
+    ActionCreator<any, T1>,
+    ActionCreator<any, T2>,
+    ActionCreator<any, T3>,
+    ActionCreator<any, T4>
+  ],
+  updater: StateUpdater<S, T1 | T2 | T3 | T4>,
+): ReducerDef<S, T1 | T2 | T3 | T4>;
+
+export function onAny(creators: any, updater: any) {
+  return {creators, updater};
+}
+
 export const defineReducer = <S>(
   initialState: S,
   definitions: ReducerDef<S, any>[],
