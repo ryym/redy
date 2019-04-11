@@ -6,7 +6,7 @@ import {
   ConnectedComponentClass,
   connect as reduxConnect,
 } from 'react-redux';
-import {Dispatch, wrapDispatch} from './redy';
+import {Dispatch, wrapDispatch} from './redy2';
 
 const RedyContext = React.createContext<Dispatch | null>(null);
 
