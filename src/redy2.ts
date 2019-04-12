@@ -136,15 +136,17 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, ReduxDispatc
       }
 
       const {thunk} = action.meta;
-      if (thunk != null) {
-        const promise = thunk(wrappedDispatch, getState, context);
-        return {
-          ...action,
-          promise: action.promise!.catch(() => {}).then(() => promise),
-        };
-      } else {
-        return next(action);
+      const nextResult = next(action);
+
+      if (thunk == null) {
+        return nextResult;
       }
+
+      const promise = thunk(wrappedDispatch, getState, context);
+      return {
+        ...action,
+        promise: action.promise!.catch(() => {}).then(() => promise),
+      };
     };
   };
 };
