@@ -39,15 +39,13 @@ type Props = {
   dispatch: Dispatch;
 };
 
-const Counter = function(props: Props) {
+const Counter = ({count, dispatch}: Props) => {
   return (
     <div>
-      <h1>count: {props.count}</h1>
-      <button onClick={() => props.dispatch(Increment, 3)}>Increment 3</button>
-      <button onClick={() => props.dispatch(Decrement, 2)}>Decrement 2</button>
-      <button onClick={() => props.dispatch(IncrementAsync, {n: 10, ms: 800})}>
-        Increment Async
-      </button>
+      <h1>count: {count}</h1>
+      <button onClick={() => dispatch(Increment, 3)}>Increment 3</button>
+      <button onClick={() => dispatch(Decrement, 2)}>Decrement 2</button>
+      <button onClick={() => dispatch(IncrementAsync, {n: 10, ms: 800})}>Increment Async</button>
     </div>
   );
 };
