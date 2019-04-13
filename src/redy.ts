@@ -1,33 +1,4 @@
-import {
-  Middleware,
-  MiddlewareAPI,
-  Action,
-  AnyAction,
-  Dispatch as ReduxDispatch,
-  Reducer,
-} from 'redux';
-
-export type ActionCreator<A extends any[], P> = {
-  (...args: A): P;
-};
-
-export type RedyAction<A extends any[], P> = {
-  type: string;
-  payload: P;
-  promise: Promise<Resolved<P>>;
-  meta: {
-    redy: boolean;
-    creator: ActionCreator<A, P>;
-    args: A;
-    [key: string]: any;
-    [key: number]: any;
-  };
-};
-
-export type Dispatch = <A extends any[], P>(
-  action: ActionCreator<A, P>,
-  ...args: A
-) => RedyAction<A, P>;
+import {Middleware, MiddlewareAPI, AnyAction, Dispatch as ReduxDispatch, Reducer} from 'redux';
 
 export type Thunk<S, R = void, C = undefined> = (
   dispatch: Dispatch,
@@ -35,7 +6,66 @@ export type Thunk<S, R = void, C = undefined> = (
   context?: C,
 ) => Promise<R>;
 
-export type Resolved<P> = P extends Thunk<any, infer R> ? R : P;
+export class Action<P, T> {
+  constructor(readonly payload: P, readonly thunk: T) {}
+
+  effect<T2 extends Thunk<any, any, any> = Thunk<{}>>(thunk: T2): Action<P, T2> {
+    return new Action(this.payload, thunk);
+  }
+}
+
+export const action = <P>(payload: P) => new Action(payload, undefined);
+
+export const effect = <T extends Thunk<any, any, any> = Thunk<{}>>(thunk: T) =>
+  new Action(undefined, thunk);
+
+export type ActionCreator<A extends any[], P, T = any> = {
+  (...args: A): Action<P, T>;
+};
+
+export type RedyAction<A extends any[], P, T = void> = {
+  type: string;
+  payload: P;
+  promise: RedyActionPromise<T>;
+  meta: {
+    redy: boolean;
+    creator: ActionCreator<A, P, T>;
+    thunk: T;
+    args: A;
+    [key: string]: any;
+    [key: number]: any;
+  };
+};
+
+export type RedyActionPromise<T> = T extends Thunk<any, infer R> ? Promise<R> : undefined;
+
+export type Dispatch = <A extends any[], P, T = void>(
+  action: ActionCreator<A, P, T>,
+  ...args: A
+) => RedyAction<A, P, T>;
+
+export const toAction = <A extends any[], P, T>(
+  creator: ActionCreator<A, P, T>,
+  ...args: A
+): RedyAction<A, P, T> => {
+  const {thunk, payload} = creator(...args);
+
+  let promise =
+    thunk != null
+      ? Promise.reject('[redy] Please use redyMiddleware. Otherwise thunk has no effects.')
+      : undefined;
+
+  return {
+    type: creator.name,
+    payload,
+    promise: promise as RedyActionPromise<T>,
+    meta: {redy: true, creator, args, thunk},
+  };
+};
+
+export const wrapDispatch = (dispatch: ReduxDispatch): Dispatch => {
+  return (creator, ...args) => dispatch(toAction(creator, ...args));
+};
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
 
@@ -93,32 +123,7 @@ export const defineReducer = <S>(
   };
 };
 
-export const isThunk = (payload: any): payload is Thunk<any, any, any> =>
-  typeof payload === 'function';
-
-export const toAction = <A extends any[], P>(
-  creator: ActionCreator<A, P>,
-  ...args: A
-): RedyAction<A, P> => {
-  const payload = creator(...args);
-
-  let promise = isThunk(payload)
-    ? Promise.reject('Please use redyMiddleware. Otherwise thunk actions have no effects.')
-    : Promise.resolve(payload as Resolved<P>);
-
-  return {
-    type: creator.name,
-    payload,
-    promise,
-    meta: {redy: true, creator, args},
-  };
-};
-
-export const wrapDispatch = (dispatch: ReduxDispatch): Dispatch => {
-  return (creator, ...args) => dispatch(toAction(creator, ...args));
-};
-
-export const isRedyAction = (action: AnyAction): action is RedyAction<any, any> => {
+export const isRedyAction = (action: AnyAction): action is RedyAction<any, any, any> => {
   return action.meta && action.meta.redy;
 };
 
@@ -130,15 +135,18 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, ReduxDispatc
         return next(action);
       }
 
-      if (isThunk(action.payload)) {
-        const promise = action.payload(wrappedDispatch, getState, context);
-        return {
-          ...action,
-          promise: action.promise.catch(() => {}).then(() => promise),
-        };
-      } else {
-        return next(action);
+      const {thunk} = action.meta;
+      const nextResult = next(action);
+
+      if (thunk == null) {
+        return nextResult;
       }
+
+      const promise = thunk(wrappedDispatch, getState, context);
+      return {
+        ...action,
+        promise: action.promise!.catch(() => {}).then(() => promise),
+      };
     };
   };
 };

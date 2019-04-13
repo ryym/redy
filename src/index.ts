@@ -1,2 +1,2 @@
-export * from './redy2';
+export * from './redy';
 export * from './react';
