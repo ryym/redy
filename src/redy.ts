@@ -1,4 +1,11 @@
-import {Middleware, MiddlewareAPI, AnyAction, Dispatch as ReduxDispatch, Reducer} from 'redux';
+import {
+  Middleware,
+  MiddlewareAPI,
+  AnyAction,
+  Store,
+  Dispatch as ReduxDispatch,
+  Reducer,
+} from 'redux';
 
 export type Thunk<S, R = void, C = undefined> = (
   dispatch: Dispatch,
@@ -65,6 +72,14 @@ export const toAction = <A extends any[], P, T>(
 
 export const wrapDispatch = (dispatch: ReduxDispatch): Dispatch => {
   return (creator, ...args) => dispatch(toAction(creator, ...args));
+};
+
+export const dispatch = <A extends any[], P, T = void>(
+  store: Store,
+  creator: ActionCreator<A, P, T>,
+  ...args: A
+): RedyAction<A, P, T> => {
+  return store.dispatch(toAction(creator, ...args));
 };
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
