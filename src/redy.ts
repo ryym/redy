@@ -157,11 +157,11 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, ReduxDispatc
         return nextResult;
       }
 
+      // Clear initial rejection which notifies user who forgot to use redyMiddleware.
+      action.promise!.catch(() => {});
+
       const promise = thunk(wrappedDispatch, getState, context);
-      return {
-        ...action,
-        promise: action.promise!.catch(() => {}).then(() => promise),
-      };
+      return {...action, promise};
     };
   };
 };
