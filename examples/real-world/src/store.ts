@@ -1,6 +1,6 @@
 import {History} from 'history';
-import {Store as ReduxStore, createStore, applyMiddleware} from 'redux';
-import {redyMiddleware, Dispatch} from 'redy';
+import {Store as ReduxStore, Dispatch, createStore, applyMiddleware} from 'redux';
+import {redyMiddleware} from 'redy';
 import logger from 'redux-logger';
 import {createReducer} from './reducer';
 import {State} from './state';

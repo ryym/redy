@@ -1,5 +1,5 @@
 import React from 'react';
-import {connect} from 'redy';
+import {connect} from 'react-redux';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
 import {WithDispatch} from '../store';
@@ -26,8 +26,8 @@ export type WrapperProps = Readonly<{
 export class RepoPageView extends React.Component<WithDispatch<Props>> {
   componentDidMount() {
     const {fullName, dispatch} = this.props;
-    dispatch(FetchRepo, fullName);
-    dispatch(FetchStargazers, {fullName});
+    dispatch(FetchRepo(fullName));
+    dispatch(FetchStargazers({fullName}));
   }
 
   render() {
@@ -50,7 +50,7 @@ export class RepoPageView extends React.Component<WithDispatch<Props>> {
           items={stargazers}
           isFetching={pagination.isFetching}
           nextPageUrl={pagination.nextPageUrl}
-          onLoadMoreClick={url => dispatch(FetchStargazers, {fullName, nextPageUrl: url})}
+          onLoadMoreClick={url => dispatch(FetchStargazers({fullName, nextPageUrl: url}))}
           loadingLabel={`Loading stargazers of ${fullName}...`}
         >
           {user => <UserItem key={user.login} user={user} />}

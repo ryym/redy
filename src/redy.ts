@@ -1,123 +1,108 @@
-import {
-  Middleware,
-  MiddlewareAPI,
-  AnyAction,
-  Store,
-  Dispatch as ReduxDispatch,
-  Reducer,
-} from 'redux';
+import {AnyAction, Reducer, Dispatch, Middleware, MiddlewareAPI} from 'redux';
 
 export type Thunk<S, R = void, C = undefined> = (
   dispatch: Dispatch,
   getState: () => S,
-  context?: C,
+  context: C,
 ) => Promise<R>;
 
-export class Action<P, T> {
-  constructor(readonly payload: P, readonly thunk: T) {}
-
-  effect<T2 extends Thunk<any, any, any> = Thunk<{}>>(thunk: T2): Action<P, T2> {
-    return new Action(this.payload, thunk);
-  }
-}
-
-export const action = <P>(payload: P) => new Action(payload, undefined);
-
-export const effect = <T extends Thunk<any, any, any> = Thunk<{}>>(thunk: T) =>
-  new Action(undefined, thunk);
-
-export type ActionCreator<A extends any[], P, T = any> = {
-  (...args: A): Action<P, T>;
-};
-
-export type RedyAction<A extends any[], P, T = void> = {
-  type: string;
+export type RedyAction<T, P, E> = {
+  type: T;
   payload: P;
-  promise: RedyActionPromise<T>;
+  promise: RedyActionPromise<E>;
   meta: {
     redy: boolean;
-    creator: ActionCreator<A, P, T>;
-    thunk: T;
-    args: A;
+    thunk: E;
     [key: string]: any;
     [key: number]: any;
   };
 };
 
-export type RedyActionPromise<T> = T extends Thunk<any, infer R> ? Promise<R> : undefined;
+export type RedyActionPromise<E> = E extends Thunk<any, infer R> ? Promise<R> : undefined;
 
-export type Dispatch = <A extends any[], P, T = void>(
-  action: ActionCreator<A, P, T>,
-  ...args: A
-) => RedyAction<A, P, T>;
+export interface ActionCreator<T, A extends any[], R, E> {
+  (...args: A): RedyAction<T, R, E>;
+  readonly type: T;
+}
 
-export const toAction = <A extends any[], P, T>(
-  creator: ActionCreator<A, P, T>,
-  ...args: A
-): RedyAction<A, P, T> => {
-  const {thunk, payload} = creator(...args);
+export const action = <T, A extends any[], R>(
+  type: T,
+  create: (...args: A) => R,
+): ActionCreator<T, A, R, undefined> => {
+  const f = (...args: A): RedyAction<T, R, undefined> => ({
+    type,
+    payload: create(...args),
+    promise: undefined,
+    meta: {redy: true, thunk: undefined},
+  });
+  return Object.assign(f, {type});
+};
 
-  let promise =
-    thunk != null
-      ? Promise.reject('[redy] Please use redyMiddleware. Otherwise thunk has no effects.')
-      : undefined;
-
-  return {
-    type: creator.name,
-    payload,
-    promise: promise as RedyActionPromise<T>,
-    meta: {redy: true, creator, args, thunk},
+export const effect = <T, A extends any[], E extends Thunk<any, any, any>>(
+  type: T,
+  createThunk: (...args: A) => E,
+): ActionCreator<T, A, never, E> => {
+  const f = (...args: A): RedyAction<T, never, E> => {
+    const warningPromise = Promise.reject(
+      '[redy] Please use redyMiddleware. Otherwise thunk has no effects.',
+    ) as unknown;
+    return {
+      type,
+      payload: undefined as never,
+      promise: warningPromise as RedyActionPromise<E>,
+      meta: {redy: true, thunk: createThunk(...args)},
+    };
   };
+  return Object.assign(f, {type});
 };
 
-export const wrapDispatch = (dispatch: ReduxDispatch): Dispatch => {
-  return (creator, ...args) => dispatch(toAction(creator, ...args));
-};
-
-export const dispatch = <A extends any[], P, T = void>(
-  store: Store,
-  creator: ActionCreator<A, P, T>,
-  ...args: A
-): RedyAction<A, P, T> => {
-  return store.dispatch(toAction(creator, ...args));
+export const actionEffect = <T, A extends any[], R, E extends Thunk<any, any, any>>(
+  type: T,
+  createBoth: (...args: A) => [R, E],
+): ActionCreator<T, A, R, E> => {
+  const f = (...args: A): RedyAction<T, R, E> => {
+    const warningPromise = Promise.reject(
+      '[redy] Please use redyMiddleware. Otherwise thunk has no effects.',
+    ) as unknown;
+    const [payload, thunk] = createBoth(...args);
+    return {
+      type,
+      payload,
+      promise: warningPromise as RedyActionPromise<E>,
+      meta: {redy: true, thunk},
+    };
+  };
+  return Object.assign(f, {type});
 };
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
 
 export type ReducerDef<S, P> = {
-  creators: ActionCreator<any, P>[];
+  actionTypes: string[];
   updater: StateUpdater<S, P>;
 };
 
+export type AnyActionCreator<P = any> = ActionCreator<any, any, P, any>;
+
 export const on = <S, P>(
-  creator: ActionCreator<any, P>,
+  creator: AnyActionCreator<P>,
   updater: StateUpdater<S, P>,
 ): ReducerDef<S, P> => {
-  return {creators: [creator], updater};
+  return {actionTypes: [creator.type], updater};
 };
 
-export function onAny<S, T1, T2>(
-  creators: [ActionCreator<any, T1>, ActionCreator<any, T2>],
-  updater: StateUpdater<S, T1 | T2>,
-): ReducerDef<S, T1 | T2>;
+export function onAny<S, P1, P2>(
+  creators: [AnyActionCreator<P1>, AnyActionCreator<P2>],
+  updater: StateUpdater<S, P1 | P2>,
+): ReducerDef<S, P1 | P2>;
 
-export function onAny<S, T1, T2, T3>(
-  creators: [ActionCreator<any, T1>, ActionCreator<any, T2>, ActionCreator<any, T3>],
-  updater: StateUpdater<S, T1 | T2 | T3>,
-): ReducerDef<S, T1 | T2 | T3>;
-
-export function onAny<S, T1, T2, T3, T4>(
-  creators: [
-    ActionCreator<any, T1>,
-    ActionCreator<any, T2>,
-    ActionCreator<any, T3>,
-    ActionCreator<any, T4>
-  ],
-  updater: StateUpdater<S, T1 | T2 | T3 | T4>,
-): ReducerDef<S, T1 | T2 | T3 | T4>;
+export function onAny<S, P1, P2, P3>(
+  creators: [AnyActionCreator<P1>, AnyActionCreator<P2>, AnyActionCreator<P3>],
+  updater: StateUpdater<S, P1 | P2 | P3>,
+): ReducerDef<S, P1 | P2 | P3>;
 
 export function onAny(creators: any, updater: any) {
-  return {creators, updater};
+  return {actionTypes: creators.map((c: any) => c.type), updater};
 }
 
 export const defineReducer = <S>(
@@ -126,9 +111,9 @@ export const defineReducer = <S>(
 ): Reducer<S> => {
   const handlers: {[key: string]: StateUpdater<S, any>} = {};
 
-  definitions.forEach(({creators, updater}) => {
-    creators.forEach(creator => {
-      handlers[creator.name] = updater;
+  definitions.forEach(({actionTypes, updater}) => {
+    actionTypes.forEach(type => {
+      handlers[type] = updater;
     });
   });
 
@@ -142,9 +127,8 @@ export const isRedyAction = (action: AnyAction): action is RedyAction<any, any, 
   return action.meta && action.meta.redy;
 };
 
-export const redyMiddleware = <C>(context?: C): Middleware<{}, any, ReduxDispatch> => {
-  return <S>({dispatch, getState}: MiddlewareAPI<ReduxDispatch, S>) => {
-    const wrappedDispatch = wrapDispatch(dispatch);
+export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> => {
+  return <S>({dispatch, getState}: MiddlewareAPI<Dispatch, S>) => {
     return next => action => {
       if (action == null || !isRedyAction(action)) {
         return next(action);
@@ -160,7 +144,7 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, ReduxDispatc
       // Clear initial rejection which notifies user who forgot to use redyMiddleware.
       action.promise!.catch(() => {});
 
-      const promise = thunk(wrappedDispatch, getState, context);
+      const promise = thunk(dispatch, getState, context);
       return {...action, promise};
     };
   };
