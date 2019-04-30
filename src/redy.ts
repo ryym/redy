@@ -22,7 +22,7 @@ export type RedyActionPromise<E> = E extends Thunk<any, infer R> ? Promise<R> : 
 
 export interface ActionCreator<T, A extends any[], R, E> {
   (...args: A): RedyAction<T, R, E>;
-  readonly type: T;
+  readonly actionType: T;
 }
 
 export const action = <T, A extends any[], R>(
@@ -35,7 +35,7 @@ export const action = <T, A extends any[], R>(
     promise: undefined,
     meta: {redy: true, thunk: undefined},
   });
-  return Object.assign(f, {type});
+  return Object.assign(f, {actionType: type});
 };
 
 export const effect = <T, A extends any[], E extends Thunk<any, any, any>>(
@@ -53,7 +53,7 @@ export const effect = <T, A extends any[], E extends Thunk<any, any, any>>(
       meta: {redy: true, thunk: createThunk(...args)},
     };
   };
-  return Object.assign(f, {type});
+  return Object.assign(f, {actionType: type});
 };
 
 export const actionEffect = <T, A extends any[], R, E extends Thunk<any, any, any>>(
@@ -72,7 +72,7 @@ export const actionEffect = <T, A extends any[], R, E extends Thunk<any, any, an
       meta: {redy: true, thunk},
     };
   };
-  return Object.assign(f, {type});
+  return Object.assign(f, {actionType: type});
 };
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
@@ -88,7 +88,7 @@ export const on = <S, P>(
   creator: AnyActionCreator<P>,
   updater: StateUpdater<S, P>,
 ): ReducerDef<S, P> => {
-  return {actionTypes: [creator.type], updater};
+  return {actionTypes: [creator.actionType], updater};
 };
 
 export function onAny<S, P1, P2>(
