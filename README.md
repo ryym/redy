@@ -9,7 +9,7 @@ Yet another [Redux](https://redux.js.org/) wrapper.
 
 ## Counter Example
 
-Store:
+### Store
 
 ```typescript
 import {createStore, applyMiddleware} from 'redux';
@@ -21,21 +21,17 @@ export type MyThunk<R = void> = Thunk<State, R>;
 
 // Action creators
 // An action creator returns an action or effect (thunk).
-// And its function name becomes its action type so you don't need
-// to specify an action type.
 
-export const Increment = (n: number) => action(n);
+export const Increment = action('INCREMENT', (n: number) => n);
 
-export const Decrement = (n: number) => action(n);
+export const Decrement = action('DECREMENT', (n: number) => n);
 
-// Note that the interface of `dispatch` is different.
-// Redux: dispatch(actionCreator(payload))
-// Redy:  dispatch(actionCreator, payload)
-
-export const IncrementAsync = (n: number) =>
-  effect<MyThunk>(async dispatch => {
+export const IncrementAsync = effect(
+  'INCREEMNT_ASYNC',
+  (n: number) => async dispatch => {
     setTimeout(() => dispatch(Increment, n), 1000)
-  });
+  }
+);
 
 // Reducer
 // We cannot use switch statements for reducers type safely because
@@ -51,7 +47,7 @@ const reducer = defineReducer(initialState, [
   on(Decrement, ({count}, n) => ({count: count - n})),
 ]);
 
-// console.log(reducer({count: 7}, {type: 'Increment', payload: 3}));
+// console.log(reducer({count: 7}, {type: 'INCREMENT', payload: 3}));
 // => { count: 10 }
 
 // Store
@@ -60,15 +56,14 @@ const reducer = defineReducer(initialState, [
 export configureStore = () => createStore(reducer, applyMiddleware(redyMiddleware));
 ```
 
-Component:
+### Component
 
 ```typescript
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {Dispatch} from 'redux';
+import {connect, Provider} from 'react-redux';
 import {configureStore, Increment, Decrement, IncrementAsync, State} from './store';
-
-// You need to import `connect` and `Provider` from `redy` instead of `react-redux`.
-import {connect, Provider, Dispatch} from 'redy';
 
 type Props = {
   count: number;
@@ -79,9 +74,9 @@ const Counter = ({count, dispatch}: Props) => {
   return (
     <div>
       <h1>count: {count}</h1>
-      <button onClick={() => dispatch(Increment, 3)}>Increment 3</button>
-      <button onClick={() => dispatch(Decrement, 2)}>Decrement 2</button>
-      <button onClick={() => dispatch(IncrementAsync, 10)}>Increment Async</button>
+      <button onClick={() => dispatch(Increment(3))}>Increment 3</button>
+      <button onClick={() => dispatch(Decrement(2))}>Decrement 2</button>
+      <button onClick={() => dispatch(IncrementAsync(10))}>Increment Async</button>
     </div>
   );
 };
@@ -98,11 +93,17 @@ ReactDOM.render(
 );
 ```
 
-You can define action creator which creates both of an action and effect as well.
+You can define action creator which creates both of an action and effect as well
+using `actionEffect`.
 
 ```typescript
-const Increment = (n: number) =>
-  action(n).effect<MyThunk>(async (_dispatch, getState) => {
-    console.log('Increment!', n, getState());
-  });
+import {actionEffect} from 'redy';
+
+// Register a function which returns an array of the action and the thunk.
+const Increment2 = actionEffect('INCREMENT2', (n: number) => [
+  n,
+  async (_dispatch, _getState) => {
+    console.log('increment2 fired!', n);
+  },
+]);
 ```
