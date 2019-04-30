@@ -20,7 +20,8 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "start": "tsc -w",
-    "test": "jest"
+    "test": "jest",
+    "preversion": "npm run build"
   },
   "husky": {
     "hooks": {
