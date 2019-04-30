@@ -52,8 +52,6 @@
     "typescript": "^3.3.3333"
   },
   "peerDependencies": {
-    "react": "^16.8.4",
-    "react-redux": "^6.0.1",
     "redux": "^4.0.1"
   },
   "dependencies": {}
