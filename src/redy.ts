@@ -102,7 +102,7 @@ export function onAny<S, P1, P2, P3>(
 ): ReducerDef<S, P1 | P2 | P3>;
 
 export function onAny(creators: any, updater: any) {
-  return {actionTypes: creators.map((c: any) => c.type), updater};
+  return {actionTypes: creators.map((c: any) => c.actionType), updater};
 }
 
 export const defineReducer = <S>(
