@@ -1,4 +1,4 @@
-import {AnyAction, Reducer, Dispatch, Middleware, MiddlewareAPI} from 'redux';
+import {AnyAction, Dispatch} from 'redux';
 
 export type Thunk<S, R = void, C = undefined> = (
   dispatch: Dispatch,
@@ -75,77 +75,6 @@ export const actionEffect = <T, A extends any[], R, E extends Thunk<any, any, an
   return Object.assign(f, {actionType: type});
 };
 
-export type StateUpdater<S, P> = (state: S, payload: P) => S;
-
-export type ReducerDef<S, P> = {
-  actionTypes: string[];
-  updater: StateUpdater<S, P>;
-};
-
-export type AnyActionCreator<P = any> = ActionCreator<any, any, P, any>;
-
-export const on = <S, P>(
-  creator: AnyActionCreator<P>,
-  updater: StateUpdater<S, P>,
-): ReducerDef<S, P> => {
-  return {actionTypes: [creator.actionType], updater};
-};
-
-export function onAny<S, P1, P2>(
-  creators: [AnyActionCreator<P1>, AnyActionCreator<P2>],
-  updater: StateUpdater<S, P1 | P2>,
-): ReducerDef<S, P1 | P2>;
-
-export function onAny<S, P1, P2, P3>(
-  creators: [AnyActionCreator<P1>, AnyActionCreator<P2>, AnyActionCreator<P3>],
-  updater: StateUpdater<S, P1 | P2 | P3>,
-): ReducerDef<S, P1 | P2 | P3>;
-
-export function onAny(creators: any, updater: any) {
-  return {actionTypes: creators.map((c: any) => c.actionType), updater};
-}
-
-export const defineReducer = <S>(
-  initialState: S,
-  definitions: ReducerDef<S, any>[],
-): Reducer<S> => {
-  const handlers: {[key: string]: StateUpdater<S, any>} = {};
-
-  definitions.forEach(({actionTypes, updater}) => {
-    actionTypes.forEach(type => {
-      handlers[type] = updater;
-    });
-  });
-
-  return (state = initialState, action) => {
-    const handler = handlers[action.type];
-    return handler == null ? state : handler(state, action.payload);
-  };
-};
-
 export const isRedyAction = (action: AnyAction): action is RedyAction<any, any, any> => {
   return action.meta && action.meta.redy;
-};
-
-export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> => {
-  return <S>({dispatch, getState}: MiddlewareAPI<Dispatch, S>) => {
-    return next => action => {
-      if (action == null || !isRedyAction(action)) {
-        return next(action);
-      }
-
-      const {thunk} = action.meta;
-      const nextResult = next(action);
-
-      if (thunk == null) {
-        return nextResult;
-      }
-
-      // Clear initial rejection which notifies user who forgot to use redyMiddleware.
-      action.promise!.catch(() => {});
-
-      const promise = thunk(dispatch, getState, context);
-      return {...action, promise};
-    };
-  };
 };

@@ -1,1 +1,3 @@
-export * from './redy';
+export * from './action';
+export * from './reducer';
+export * from './middleware';
