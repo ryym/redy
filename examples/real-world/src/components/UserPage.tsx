@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
 import {WithDispatch} from '../store';
-import {FetchUser, FetchStarred} from '../actions';
+import {githubAction} from '../actions/github';
 import {User, RepoWithOwner} from '../lib/models';
 import {Pagination, newPagination} from '../lib/pagination';
 import {getUser, getStarredRepos, getStarredPagination} from '../selectors';
@@ -38,8 +38,8 @@ export class UserPageView extends React.Component<AllProps> {
   // XXX: 既にデータがあるのに読み込んじゃう
   loadUserData() {
     const {login, dispatch} = this.props;
-    dispatch(FetchUser(login));
-    dispatch(FetchStarred({login}));
+    dispatch(githubAction.FetchUser(login));
+    dispatch(githubAction.FetchStarred({login}));
   }
 
   render() {
@@ -64,7 +64,7 @@ export class UserPageView extends React.Component<AllProps> {
           items={starredRepos}
           isFetching={pagination.isFetching}
           nextPageUrl={pagination.nextPageUrl}
-          onLoadMoreClick={url => dispatch(FetchStarred({login, nextPageUrl: url}))}
+          onLoadMoreClick={url => dispatch(githubAction.FetchStarred({login, nextPageUrl: url}))}
           loadingLabel={`Loading ${login}'s starred...'`}
         >
           {({repo, owner}) => <RepoItem key={repo.fullName} repo={repo} owner={owner} />}

@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {State} from '../state';
 import {WithDispatch} from '../store';
-import {InputQuery, Search} from '../actions';
+import {searchAction} from '../actions/search';
 
 const GITHUB_REPO = 'https://github.com/ryym/redy';
 
@@ -13,7 +13,7 @@ export type Props = Readonly<{
 }>;
 
 export const ExploreView = ({query, dispatch}: WithDispatch<Props>) => {
-  const search = () => dispatch(Search(query));
+  const search = () => dispatch(searchAction.Search(query));
 
   return (
     <div>
@@ -23,7 +23,7 @@ export const ExploreView = ({query, dispatch}: WithDispatch<Props>) => {
         <input
           value={query}
           size={45}
-          onChange={event => dispatch(InputQuery(event.target.value))}
+          onChange={event => dispatch(searchAction.InputQuery(event.target.value))}
           onKeyUp={event => (event.keyCode === KEY_CODE_ENTER ? search() : null)}
         />
         <button onClick={search}>Go!</button>

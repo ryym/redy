@@ -3,25 +3,26 @@ import ReactDOM from 'react-dom';
 import {createStore, applyMiddleware, Dispatch} from 'redux';
 import {Provider, connect} from 'react-redux';
 import logger from 'redux-logger';
-import {action, effect, defineReducer, on, redyMiddleware, Thunk} from 'redy';
+import {defineActions, effect, defineReducer, on, redyMiddleware, Thunk} from 'redy';
 
 type State = {count: number};
 
-const Increment = action('INCREMENT', (n: number) => n);
+const actions = defineActions('counter', {
+  Increment: (n: number) => n,
 
-const Decrement = action('DECREMENT', (n: number) => n);
+  Decrement: (n: number) => n,
 
-const IncrementAsync = effect(
-  'INCREMENT_ASYNC',
-  ({n, ms}: {n: number; ms: number}): Thunk<State> => async (dispatch, state) => {
-    console.log('increment async', state().count);
-    setTimeout(() => dispatch(Increment(n)), ms);
-  },
-);
+  IncrementAsync: effect(
+    ({n, ms}: {n: number; ms: number}): Thunk<State> => async (dispatch, state) => {
+      console.log('increment async', state().count);
+      setTimeout(() => dispatch(actions.Increment(n)), ms);
+    },
+  ),
+});
 
 const reducer = defineReducer({count: 0}, [
-  on(Increment, ({count}, n) => ({count: count + n})),
-  on(Decrement, ({count}, n) => ({count: count - n})),
+  on(actions.Increment, ({count}, n) => ({count: count + n})),
+  on(actions.Decrement, ({count}, n) => ({count: count - n})),
 ]);
 
 const store = createStore(reducer, applyMiddleware(logger, redyMiddleware()));
@@ -35,9 +36,11 @@ const Counter = ({count, dispatch}: Props) => {
   return (
     <div>
       <h1>count: {count}</h1>
-      <button onClick={() => dispatch(Increment(3))}>Increment 3</button>
-      <button onClick={() => dispatch(Decrement(2))}>Decrement 2</button>
-      <button onClick={() => dispatch(IncrementAsync({n: 10, ms: 800}))}>Increment Async</button>
+      <button onClick={() => dispatch(actions.Increment(3))}>Increment 3</button>
+      <button onClick={() => dispatch(actions.Decrement(2))}>Decrement 2</button>
+      <button onClick={() => dispatch(actions.IncrementAsync({n: 10, ms: 800}))}>
+        Increment Async
+      </button>
     </div>
   );
 };

@@ -1,11 +1,15 @@
-import {action, actionEffect} from 'redy';
+import {defineActions, effect} from 'redy';
 import {Thunk} from '../types';
 
-export const InputQuery = action('InputQuery', (query: string) => query);
+export const searchAction = defineActions('search', {
+  InputQuery: (query: string) => query,
 
-export const Search = actionEffect('Search', (path: string) => [
-  path,
-  (async (_dispatch, _getState, {history}) => {
-    history.push(`/${path}`);
-  }) as Thunk,
-]);
+  Search: effect(
+    (path: string): Thunk => async (dispatch, _getState, {history}) => {
+      history.push(`/${path}`);
+      dispatch(searchAction.SearchDone(path));
+    },
+  ),
+
+  SearchDone: (query: string) => query,
+});

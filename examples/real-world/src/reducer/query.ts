@@ -1,10 +1,11 @@
 import {defineReducer, on, onAny} from 'redy';
-import {InputQuery, Search, FetchUser, FetchRepo} from '../actions';
+import {searchAction} from '../actions/search';
+import {githubAction} from '../actions/github';
 
 export const reduceQuery = defineReducer('', [
-  onAny([InputQuery, Search], (_, query) => query),
+  onAny([searchAction.InputQuery, searchAction.SearchDone], (_, query) => query),
 
-  on(FetchUser, (_, login) => login),
+  on(githubAction.FetchUserBegun, (_, login) => login),
 
-  on(FetchRepo, (_, fullName) => fullName),
+  on(githubAction.FetchRepoBegun, (_, fullName) => fullName),
 ]);

@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
 import {WithDispatch} from '../store';
-import {FetchRepo, FetchStargazers} from '../actions';
+import {githubAction} from '../actions/github';
 import {RepoWithOwner, User} from '../lib/models';
 import {Pagination, newPagination} from '../lib/pagination';
 import {getRepo, getUser, getStargazers, getStargazersPagination} from '../selectors';
@@ -26,8 +26,8 @@ export type WrapperProps = Readonly<{
 export class RepoPageView extends React.Component<WithDispatch<Props>> {
   componentDidMount() {
     const {fullName, dispatch} = this.props;
-    dispatch(FetchRepo(fullName));
-    dispatch(FetchStargazers({fullName}));
+    dispatch(githubAction.FetchRepo(fullName));
+    dispatch(githubAction.FetchStargazers({fullName}));
   }
 
   render() {
@@ -50,7 +50,9 @@ export class RepoPageView extends React.Component<WithDispatch<Props>> {
           items={stargazers}
           isFetching={pagination.isFetching}
           nextPageUrl={pagination.nextPageUrl}
-          onLoadMoreClick={url => dispatch(FetchStargazers({fullName, nextPageUrl: url}))}
+          onLoadMoreClick={url =>
+            dispatch(githubAction.FetchStargazers({fullName, nextPageUrl: url}))
+          }
           loadingLabel={`Loading stargazers of ${fullName}...`}
         >
           {user => <UserItem key={user.login} user={user} />}
