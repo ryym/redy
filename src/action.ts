@@ -20,9 +20,20 @@ export type RedyAction<T, P, E> = {
 
 export type RedyActionPromise<E> = E extends Thunk<any, infer R> ? Promise<R> : undefined;
 
-export interface ActionCreator<T, A extends any[], R, E> {
-  (...args: A): RedyAction<T, R, E>;
+export type AnyActionCreator<P = any> =
+  | ActionCreator<any, any, P>
+  | EffectCreator<any, any, any, any>;
+
+export interface ActionCreator<T, A extends any[], R> {
   readonly actionType: T;
+  (...args: A): RedyAction<T, R, undefined>;
+}
+
+export interface EffectCreator<T, A extends any[], E, D> {
+  readonly actionType: T;
+  (...args: A): RedyAction<T, never, E>;
+  run(...args: A): E;
+  using(dep: D): (...args: A) => E;
 }
 
 export const isRedyAction = (action: AnyAction): action is RedyAction<any, any, any> => {
@@ -31,34 +42,46 @@ export const isRedyAction = (action: AnyAction): action is RedyAction<any, any, 
 
 export type AnyThunkCreator = (...args: any[]) => Thunk<any, any, any>;
 
-export type EffectCreator<F extends AnyThunkCreator> = {
-  readonly isEffectCreator: boolean;
-  readonly f: F;
+export type EffectDefiner<F extends AnyThunkCreator, D = undefined> = {
+  readonly isEffectDefiner: boolean;
+  readonly dep: () => D;
+  readonly makeEffectCreator: (dep: D) => F;
 };
 
-export function effect<F extends AnyThunkCreator>(f: F): EffectCreator<F> {
-  return {f, isEffectCreator: true};
+export function effect<F extends AnyThunkCreator>(f: F): EffectDefiner<F> {
+  return {isEffectDefiner: true, dep: () => undefined, makeEffectCreator: () => f};
 }
 
+export function effectUsing<D, F extends AnyThunkCreator>(
+  dep: () => D,
+  make: (dep: D) => F,
+): EffectDefiner<F, D> {
+  return {isEffectDefiner: true, dep, makeEffectCreator: make};
+}
+
+export type ActionDefiner = ((...args: any[]) => any) | EffectDefiner<AnyThunkCreator, any>;
+
 export interface ActionDefs {
-  [name: string]: ((...args: any[]) => any) | EffectCreator<AnyThunkCreator>;
+  [name: string]: ActionDefiner;
 }
 
 export type ActionCreators<D extends ActionDefs> = {
   [P in keyof D]: D[P] extends (...args: infer A) => infer R
-    ? ActionCreator<string, A, R, undefined>
-    : D[P] extends EffectCreator<infer F>
+    ? ActionCreator<string, A, R>
+    : D[P] extends EffectDefiner<infer F, infer D>
     ? F extends (...args: infer A) => infer E
-      ? ActionCreator<string, A, never, E>
+      ? EffectCreator<string, A, E, D>
       : never
     : never
 };
+
 export function defineActions<D extends ActionDefs>(namespace: string, defs: D): ActionCreators<D> {
   const actions: any = {};
   Object.keys(defs).forEach((name: keyof D) => {
     const creator = defs[name] as any;
     const typeName = `${namespace}/${name}`;
-    if (creator.isEffectCreator) {
+    if (creator.isEffectDefiner) {
+      const effectCreator = creator.makeEffectCreator(creator.dep());
       const f = (...args: any[]): RedyAction<string, never, any> => {
         const warningPromise = Promise.reject(
           '[redy] Please use redyMiddleware. Otherwise thunk has no effects.',
@@ -67,10 +90,14 @@ export function defineActions<D extends ActionDefs>(namespace: string, defs: D):
           type: typeName,
           payload: undefined as never,
           promise: warningPromise,
-          meta: {redy: true, thunk: creator.f(...args)},
+          meta: {redy: true, thunk: effectCreator(...args)},
         };
       };
-      Object.assign(f, {actionType: typeName});
+      Object.assign(f, {
+        actionType: typeName,
+        using: creator.makeEffectCreator,
+        run: effectCreator,
+      });
       actions[name] = f;
     } else {
       const f = (...args: any[]): RedyAction<string, any, undefined> => ({

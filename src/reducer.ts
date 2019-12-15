@@ -1,5 +1,5 @@
 import {Reducer} from 'redux';
-import {ActionCreator} from './action';
+import {AnyActionCreator} from './action';
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
 
@@ -7,8 +7,6 @@ export type ReducerDef<S, P> = {
   actionTypes: string[];
   updater: StateUpdater<S, P>;
 };
-
-export type AnyActionCreator<P = any> = ActionCreator<any, any, P, any>;
 
 export const on = <S, P>(
   creator: AnyActionCreator<P>,
