@@ -16,10 +16,11 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> =>
       }
 
       // Clear initial rejection which notifies user who forgot to use redyMiddleware.
-      action.promise!.catch(() => {});
+      // Otherwise the promise will be reported in the console as uncaught exception.
+      action.promise!().catch(() => {});
 
       const promise = thunk(dispatch, getState, context);
-      return {...action, promise};
+      return {...action, promise: () => promise};
     };
   };
 };

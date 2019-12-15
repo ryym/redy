@@ -9,7 +9,7 @@ export type Thunk<S, R = void, C = undefined> = (
 export type RedyAction<T, P, E> = {
   type: T;
   payload: P;
-  promise: RedyActionPromise<E>;
+  promise: RedyActionPromiseAccessor<E>;
   meta: {
     redy: boolean;
     thunk: E;
@@ -18,7 +18,9 @@ export type RedyAction<T, P, E> = {
   };
 };
 
-export type RedyActionPromise<E> = E extends Thunk<any, infer R> ? Promise<R> : undefined;
+export type RedyActionPromiseAccessor<E> = E extends Thunk<any, infer R>
+  ? () => Promise<R>
+  : undefined;
 
 export type AnyActionCreator<P = any> =
   | ActionCreator<any, any, P>
@@ -89,7 +91,7 @@ export function defineActions<D extends ActionDefs>(namespace: string, defs: D):
         return {
           type: typeName,
           payload: undefined as never,
-          promise: warningPromise,
+          promise: () => warningPromise,
           meta: {redy: true, thunk: effectCreator(...args)},
         };
       };
