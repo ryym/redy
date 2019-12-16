@@ -1,5 +1,5 @@
 import {Dispatch, Middleware, MiddlewareAPI} from 'redux';
-import {isRedyAction, extractMetaFromAction} from './action';
+import {isRedyAction, extractMetaFromAction} from './actionCreator';
 
 export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> => {
   return <S>({dispatch, getState}: MiddlewareAPI<Dispatch, S>) => {

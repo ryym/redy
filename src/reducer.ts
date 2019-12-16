@@ -1,5 +1,5 @@
 import {Reducer} from 'redux';
-import {AnyActionCreator} from './action';
+import {AnyActionCreator} from './actionCreator';
 
 export type StateUpdater<S, P> = (state: S, payload: P) => S;
 
@@ -8,12 +8,12 @@ export type ReducerDef<S, P> = {
   updater: StateUpdater<S, P>;
 };
 
-export const on = <S, P>(
+export function on<S, P>(
   creator: AnyActionCreator<P>,
   updater: StateUpdater<S, P>,
-): ReducerDef<S, P> => {
+): ReducerDef<S, P> {
   return {actionTypes: [creator.actionType], updater};
-};
+}
 
 export function onAny<S, P1, P2>(
   creators: [AnyActionCreator<P1>, AnyActionCreator<P2>],
@@ -29,10 +29,7 @@ export function onAny(creators: any, updater: any) {
   return {actionTypes: creators.map((c: any) => c.actionType), updater};
 }
 
-export const defineReducer = <S>(
-  initialState: S,
-  definitions: ReducerDef<S, any>[],
-): Reducer<S> => {
+export function defineReducer<S>(initialState: S, definitions: ReducerDef<S, any>[]): Reducer<S> {
   const handlers: {[key: string]: StateUpdater<S, any>} = {};
 
   definitions.forEach(({actionTypes, updater}) => {
@@ -45,4 +42,4 @@ export const defineReducer = <S>(
     const handler = handlers[action.type];
     return handler == null ? state : handler(state, action.payload);
   };
-};
+}
