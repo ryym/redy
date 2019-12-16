@@ -8,10 +8,10 @@
     "to avoid having two copies of React (https://github.com/facebook/react/issues/15050)"
   ],
   "dependencies": {
-    "@types/jest": "24.0.11",
-    "@types/node": "11.11.3",
-    "react-scripts": "2.1.8",
-    "typescript": "3.3.3333"
+    "@types/jest": "24.0.23",
+    "@types/node": "12.12.18",
+    "react-scripts": "3.3.0",
+    "typescript": "3.7.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -29,6 +29,6 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@types/react-redux": "^7.0.5"
+    "@types/react-redux": "^7.1.5"
   }
 }

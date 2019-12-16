@@ -8,12 +8,12 @@
     "to avoid having two copies of React (https://github.com/facebook/react/issues/15050)"
   ],
   "dependencies": {
-    "@types/node": "11.11.3",
-    "history": "^4.9.0",
+    "@types/node": "12.12.18",
+    "history": "^4.10.1",
     "humps": "^2.0.1",
-    "normalizr": "^3.3.0",
-    "react-scripts": "2.1.8",
-    "typescript": "3.3.3333"
+    "normalizr": "^3.4.1",
+    "react-scripts": "3.3.0",
+    "typescript": "3.7.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -31,7 +31,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@types/history": "^4.7.2",
+    "@types/history": "^4.7.3",
     "@types/humps": "^1.1.2"
   }
 }
