@@ -18,7 +18,10 @@ function isEffectDefiner(definer: AnyActionDefiner): definer is EffectDefiner<an
 }
 
 export function effect<F extends AnyThunkCreator>(f: F): EffectDefiner<F> {
-  return effectUsing(() => undefined, () => f);
+  return effectUsing(
+    () => undefined,
+    () => f,
+  );
 }
 
 export function effectUsing<D, F extends AnyThunkCreator>(
@@ -43,7 +46,7 @@ export type ActionCreators<D extends ActionDefiners> = {
     ? F extends (...args: infer A) => infer E
       ? EffectCreator<string, A, E, D>
       : never
-    : never
+    : never;
 };
 
 export function defineActions<D extends ActionDefiners>(
@@ -106,13 +109,15 @@ function defineActionCreator(
   actionType: string,
   definer: ActionDefiner,
 ): ActionCreator<any, any, any> {
-  const f = (...args: any[]): RedyAction<string, any, undefined> => ({
-    type: actionType,
-    payload: definer(...args),
-    promise: undefined,
-    meta: {
-      [ACTION_META_KEY]: {args: undefined, thunk: undefined},
-    },
-  });
+  const f = (...args: any[]): RedyAction<string, any, undefined> => {
+    const action = {
+      type: actionType,
+      payload: definer(...args),
+      meta: {},
+    };
+    return Object.defineProperties(action, {
+      promise: {enumerable: false, value: undefined},
+    });
+  };
   return Object.assign(f, {actionType});
 }
