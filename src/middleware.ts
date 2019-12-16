@@ -1,5 +1,5 @@
 import {Dispatch, Middleware, MiddlewareAPI} from 'redux';
-import {isRedyAction} from './action';
+import {isRedyAction, extractMetaFromAction} from './action';
 
 export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> => {
   return <S>({dispatch, getState}: MiddlewareAPI<Dispatch, S>) => {
@@ -8,7 +8,7 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> =>
         return next(action);
       }
 
-      const {thunk} = action.meta;
+      const {thunk} = extractMetaFromAction(action);
       const nextResult = next(action);
 
       if (thunk == null) {
@@ -20,7 +20,10 @@ export const redyMiddleware = <C>(context?: C): Middleware<{}, any, Dispatch> =>
       action.promise!().catch(() => {});
 
       const promise = thunk(dispatch, getState, context);
-      return {...action, promise: () => promise};
+      return Object.defineProperty({...action}, 'promise', {
+        value: () => promise,
+        enumerable: false,
+      });
     };
   };
 };

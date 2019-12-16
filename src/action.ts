@@ -11,8 +11,6 @@ export type RedyAction<T, P, E> = {
   payload: P;
   promise: RedyActionPromiseAccessor<E>;
   meta: {
-    redy: boolean;
-    thunk: E;
     [key: string]: any;
     [key: number]: any;
   };
@@ -38,8 +36,22 @@ export interface EffectCreator<T, A extends any[], E, D> {
   using(dep: D): (...args: A) => E;
 }
 
+const ACTION_META_KEY = Symbol('redy-action-meta');
+
+export interface RedyActionMeta<E> {
+  readonly args: any[] | undefined;
+  readonly thunk: E | undefined;
+}
+
 export const isRedyAction = (action: AnyAction): action is RedyAction<any, any, any> => {
-  return action.meta && action.meta.redy;
+  return action.meta && action.meta[ACTION_META_KEY] != null;
+};
+
+export const extractMetaFromAction = <E>(action: RedyAction<any, any, E>): RedyActionMeta<E> => {
+  if (!isRedyAction(action)) {
+    throw new Error('The given action is not created by Redy');
+  }
+  return (action.meta as any)[ACTION_META_KEY] as RedyActionMeta<E>;
 };
 
 export type AnyThunkCreator = (...args: any[]) => Thunk<any, any, any>;
@@ -85,15 +97,34 @@ export function defineActions<D extends ActionDefs>(namespace: string, defs: D):
     if (creator.isEffectDefiner) {
       const effectCreator = creator.makeEffectCreator(creator.dep());
       const f = (...args: any[]): RedyAction<string, never, any> => {
-        const warningPromise = Promise.reject(
-          '[redy] Please use redyMiddleware. Otherwise thunk has no effects.',
+        return Object.defineProperties(
+          {type: typeName, payload: undefined as never},
+          {
+            promise: {
+              enumerable: false,
+              value: () =>
+                Promise.reject('[redy] Please use redyMiddleware. Otherwise thunk has no effects.'),
+            },
+            meta: {
+              enumerable: true,
+              value: {
+                [ACTION_META_KEY]: Object.defineProperties(
+                  {},
+                  {
+                    args: {
+                      enumerable: true,
+                      value: args,
+                    },
+                    thunk: {
+                      enumerable: false,
+                      value: effectCreator(...args),
+                    },
+                  },
+                ),
+              },
+            },
+          },
         );
-        return {
-          type: typeName,
-          payload: undefined as never,
-          promise: () => warningPromise,
-          meta: {redy: true, thunk: effectCreator(...args)},
-        };
       };
       Object.assign(f, {
         actionType: typeName,
@@ -106,7 +137,9 @@ export function defineActions<D extends ActionDefs>(namespace: string, defs: D):
         type: typeName,
         payload: creator(...args),
         promise: undefined,
-        meta: {redy: true, thunk: undefined},
+        meta: {
+          [ACTION_META_KEY]: {args: undefined, thunk: undefined},
+        },
       });
       Object.assign(f, {actionType: typeName});
       actions[name] = f;
