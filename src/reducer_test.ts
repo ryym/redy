@@ -28,7 +28,7 @@ it('creates reducer function', () => {
 });
 
 it('handles multiple actions by same function', () => {
-  const $greet = defineActions('foo', {
+  const $greet = defineActions('greet', {
     Hi: (name: string) => name,
     Hello: (name: string) => name,
     GoodBye: () => {},

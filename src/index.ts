@@ -18,7 +18,7 @@ export {
   defineActions,
 } from './actionDefiner';
 
-export {StateUpdater, ReducerDef, on, onAny, defineReducer} from './reducer';
+export {StateUpdater, UpdaterMapping, on, onAny, defineReducer} from './reducer';
 
 export {redyMiddleware} from './middleware';
 
