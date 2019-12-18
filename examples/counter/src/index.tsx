@@ -10,7 +10,7 @@ type State = {count: number};
 const actions = defineActions('counter', {
   Increment: (n: number) => n,
 
-  Decrement: (n: number) => n,
+  Double: () => {},
 
   IncrementAsync: effect(
     ({n, ms}: {n: number; ms: number}): Thunk<State> => async (dispatch, state) => {
@@ -22,7 +22,7 @@ const actions = defineActions('counter', {
 
 const reducer = defineReducer({count: 0}, [
   on(actions.Increment, ({count}, n) => ({count: count + n})),
-  on(actions.Decrement, ({count}, n) => ({count: count - n})),
+  on(actions.Double, ({count}) => ({count: count * 2})),
 ]);
 
 const store = createStore(reducer, applyMiddleware(logger, redyMiddleware()));
@@ -37,7 +37,7 @@ const Counter = ({count, dispatch}: Props) => {
     <div>
       <h1>count: {count}</h1>
       <button onClick={() => dispatch(actions.Increment(3))}>Increment 3</button>
-      <button onClick={() => dispatch(actions.Decrement(2))}>Decrement 2</button>
+      <button onClick={() => dispatch(actions.Double())}>Double</button>
       <button onClick={() => dispatch(actions.IncrementAsync({n: 10, ms: 800}))}>
         Increment Async
       </button>
