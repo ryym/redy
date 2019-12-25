@@ -1,49 +1,39 @@
-import React from 'react';
-import {connect} from 'react-redux';
+import React, {useEffect} from 'react';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
-import {WithDispatch} from '../store';
 import {githubAction} from '../actions/github';
-import {User, RepoWithOwner} from '../lib/models';
-import {Pagination, newPagination} from '../lib/pagination';
+import {RepoWithOwner} from '../lib/models';
+import {newPagination} from '../lib/pagination';
 import {getUser, getStarredRepos, getStarredPagination} from '../selectors';
 import {List} from './List';
 import {UserItem} from './UserItem';
 import {RepoItem} from './RepoItem';
+import {connect} from '../connect';
 
 export type Props = Readonly<{
-  login: string;
-  user: User | null;
-  starredRepos: RepoWithOwner[];
-  pagination: Pagination<string>;
-}>;
-
-export type WrapperProps = Readonly<{
   match: Match<{login: string}>;
 }>;
 
-export type AllProps = WithDispatch<Props>;
+export const mapStateToProps = (state: State, {match}: Props) => {
+  const {login} = match.params;
+  const starredRepos = getStarredRepos(state, login);
+  const pagination = getStarredPagination(state, login);
+  return {
+    login,
+    user: getUser(state, login),
+    starredRepos,
+    pagination: pagination || newPagination(),
+  };
+};
 
-export class UserPageView extends React.Component<AllProps> {
-  componentDidMount() {
-    this.loadUserData();
-  }
+export const UserPage = connect(
+  mapStateToProps,
 
-  componentDidUpdate(prev: AllProps) {
-    if (prev.login !== this.props.login) {
-      this.loadUserData();
-    }
-  }
-
-  // XXX: 既にデータがあるのに読み込んじゃう
-  loadUserData() {
-    const {login, dispatch} = this.props;
-    dispatch(githubAction.FetchUser(login));
-    dispatch(githubAction.FetchStarred({login}));
-  }
-
-  render() {
-    const {login, user, starredRepos, pagination, dispatch} = this.props;
+  function UserPage({login, user, starredRepos, pagination, dispatch}) {
+    useEffect(() => {
+      dispatch(githubAction.FetchUser(login));
+      dispatch(githubAction.FetchStarred({login}));
+    }, [dispatch, login]);
 
     if (user == null) {
       return (
@@ -71,19 +61,5 @@ export class UserPageView extends React.Component<AllProps> {
         </List>
       </div>
     );
-  }
-}
-
-export const mapStateToProps = (state: State, {match}: WrapperProps) => {
-  const {login} = match.params;
-  const starredRepos = getStarredRepos(state, login);
-  const pagination = getStarredPagination(state, login);
-  return {
-    login,
-    user: getUser(state, login),
-    starredRepos,
-    pagination: pagination || newPagination(),
-  };
-};
-
-export const UserPage = connect(mapStateToProps)(UserPageView);
+  },
+);

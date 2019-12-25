@@ -9,8 +9,6 @@ export type Props = Readonly<{
   history: History;
 }>;
 
-// XXX: なぜか/RYYM -> /ryym. Chrome がやってる？？？
-
 export const App = ({history}: Props) => {
   return (
     <Router history={history}>
