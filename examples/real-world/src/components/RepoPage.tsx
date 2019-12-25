@@ -2,11 +2,9 @@ import React, {useEffect} from 'react';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
 import {$github} from '../actions/github';
-import {User} from '../lib/models';
 import {newPagination} from '../lib/pagination';
 import {getRepo, getUser, getStargazers, getStargazersPagination} from '../selectors';
 import {connect} from '../connect';
-
 import {List} from './List';
 import {UserItem} from './UserItem';
 import {RepoItem} from './RepoItem';
@@ -53,14 +51,15 @@ export const RepoPage = connect(
       <div>
         <RepoItem repo={repo} owner={owner} />
         <hr />
-        <List<User>
-          items={stargazers}
+        <List
           isFetching={pagination.isFetching}
           nextPageUrl={pagination.nextPageUrl}
           onLoadMoreClick={url => dispatch($github.FetchStargazers({fullName, nextPageUrl: url}))}
           loadingLabel={`Loading stargazers of ${fullName}...`}
         >
-          {user => <UserItem key={user.login} user={user} />}
+          {stargazers.map(user => (
+            <UserItem key={user.login} user={user} />
+          ))}
         </List>
       </div>
     );

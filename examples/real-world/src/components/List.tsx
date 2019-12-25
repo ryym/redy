@@ -1,23 +1,19 @@
 import React from 'react';
 
-export type Props<I> = {
-  children: (item: I) => any;
-  items: I[];
+export type Props = Readonly<{
+  children: unknown[];
   isFetching: boolean;
   nextPageUrl: string | null;
   onLoadMoreClick: (url: string) => void;
   loadingLabel: string;
-};
+}>;
 
-// Note about `<I extends any>`:
-// This is necessary to prevent TypeScript from parsing `<I>` as JSX.
-// https://github.com/Microsoft/TypeScript/issues/4922
-export const List = <I extends any>(props: Props<I>) => {
-  if (props.items.length === 0) {
-    if (props.isFetching) {
+export const List = ({children, isFetching, nextPageUrl, onLoadMoreClick, loadingLabel}: Props) => {
+  if (children.length === 0) {
+    if (isFetching) {
       return (
         <h2>
-          <i>{props.loadingLabel}</i>
+          <i>{loadingLabel}</i>
         </h2>
       );
     } else {
@@ -29,17 +25,16 @@ export const List = <I extends any>(props: Props<I>) => {
     }
   }
 
-  const {nextPageUrl} = props;
   return (
     <div>
-      {props.items.map(props.children)}
+      {children}
       {nextPageUrl && (
         <button
           style={{fontSize: '150%'}}
-          onClick={() => props.onLoadMoreClick(nextPageUrl)}
-          disabled={props.isFetching}
+          onClick={() => onLoadMoreClick(nextPageUrl)}
+          disabled={isFetching}
         >
-          {props.isFetching ? 'Loading...' : 'Load More'}
+          {isFetching ? 'Loading...' : 'Load More'}
         </button>
       )}
     </div>
