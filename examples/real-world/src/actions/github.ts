@@ -14,13 +14,13 @@ export type FetchStargazersParams = {
   nextPageUrl?: string;
 };
 
-export const githubAction = defineActions('github', {
+export const $github = defineActions('github', {
   FetchUser: effect(
     (login: string): Thunk => async (dispatch, getState) => {
       if (getUser(getState(), login) == null) {
-        dispatch(githubAction.FetchUserBegun(login));
+        dispatch($github.FetchUserBegun(login));
         const user = await api.fetchUser(login);
-        dispatch(githubAction.FetchUserDone(user));
+        dispatch($github.FetchUserDone(user));
       }
     },
   ),
@@ -32,9 +32,9 @@ export const githubAction = defineActions('github', {
   FetchRepo: effect(
     (fullName: string): Thunk => async (dispatch, getState) => {
       if (getRepo(getState(), fullName) == null) {
-        dispatch(githubAction.FetchRepoBegun(fullName));
+        dispatch($github.FetchRepoBegun(fullName));
         const repo = await api.fetchRepo(fullName);
-        dispatch(githubAction.FetchRepoDone(repo));
+        dispatch($github.FetchRepoDone(repo));
       }
     },
   ),
@@ -47,9 +47,9 @@ export const githubAction = defineActions('github', {
     ({login, nextPageUrl}: FetchStarredParams): Thunk => async (dispatch, getState) => {
       const pg = getStarredPagination(getState(), login);
       if (!pg || pg.pageCount === 0 || nextPageUrl) {
-        dispatch(githubAction.FetchStarredBegun(login));
+        dispatch($github.FetchStarredBegun(login));
         const result = await api.fetchStarred(login, nextPageUrl);
-        dispatch(githubAction.FetchStarredDone(result));
+        dispatch($github.FetchStarredDone(result));
       }
     },
   ),
@@ -62,9 +62,9 @@ export const githubAction = defineActions('github', {
     ({fullName, nextPageUrl}: FetchStargazersParams): Thunk => async (dispatch, getState) => {
       const pg = getStargazersPagination(getState(), fullName);
       if (!pg || pg.pageCount === 0 || nextPageUrl) {
-        dispatch(githubAction.FetchStargazersBegun(fullName));
+        dispatch($github.FetchStargazersBegun(fullName));
         const result = await api.fetchStargazers(fullName, nextPageUrl);
-        dispatch(githubAction.FetchStargazersDone(result));
+        dispatch($github.FetchStargazersDone(result));
       }
     },
   ),

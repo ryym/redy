@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
-import {githubAction} from '../actions/github';
+import {$github} from '../actions/github';
 import {User} from '../lib/models';
 import {newPagination} from '../lib/pagination';
 import {getRepo, getUser, getStargazers, getStargazersPagination} from '../selectors';
@@ -36,8 +36,8 @@ export const RepoPage = connect(
 
   function RepoPage({dispatch, fullName, repoWithOwner, stargazers, pagination}) {
     useEffect(() => {
-      dispatch(githubAction.FetchRepo(fullName));
-      dispatch(githubAction.FetchStargazers({fullName}));
+      dispatch($github.FetchRepo(fullName));
+      dispatch($github.FetchStargazers({fullName}));
     }, [dispatch, fullName]);
 
     if (repoWithOwner == null) {
@@ -57,9 +57,7 @@ export const RepoPage = connect(
           items={stargazers}
           isFetching={pagination.isFetching}
           nextPageUrl={pagination.nextPageUrl}
-          onLoadMoreClick={url =>
-            dispatch(githubAction.FetchStargazers({fullName, nextPageUrl: url}))
-          }
+          onLoadMoreClick={url => dispatch($github.FetchStargazers({fullName, nextPageUrl: url}))}
           loadingLabel={`Loading stargazers of ${fullName}...`}
         >
           {user => <UserItem key={user.login} user={user} />}

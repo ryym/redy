@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from '../connect';
-import {searchAction} from '../actions/search';
+import {$search} from '../actions/search';
 
 const GITHUB_REPO = 'https://github.com/ryym/redy';
 
@@ -8,7 +8,7 @@ export const Explore = connect(
   ({query}) => ({query}),
 
   function Explore({dispatch, query}) {
-    const search = () => dispatch(searchAction.Search(query));
+    const search = () => dispatch($search.Search(query));
 
     return (
       <div>
@@ -18,7 +18,7 @@ export const Explore = connect(
           <input
             value={query}
             size={45}
-            onChange={event => dispatch(searchAction.InputQuery(event.target.value))}
+            onChange={event => dispatch($search.InputQuery(event.target.value))}
             onKeyUp={event => (event.key === 'Enter' ? search() : null)}
           />
           <button onClick={search}>Go!</button>

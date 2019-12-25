@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {match as Match} from 'react-router-dom';
 import {State} from '../state';
-import {githubAction} from '../actions/github';
+import {$github} from '../actions/github';
 import {RepoWithOwner} from '../lib/models';
 import {newPagination} from '../lib/pagination';
 import {getUser, getStarredRepos, getStarredPagination} from '../selectors';
@@ -31,8 +31,8 @@ export const UserPage = connect(
 
   function UserPage({login, user, starredRepos, pagination, dispatch}) {
     useEffect(() => {
-      dispatch(githubAction.FetchUser(login));
-      dispatch(githubAction.FetchStarred({login}));
+      dispatch($github.FetchUser(login));
+      dispatch($github.FetchStarred({login}));
     }, [dispatch, login]);
 
     if (user == null) {
@@ -54,7 +54,7 @@ export const UserPage = connect(
           items={starredRepos}
           isFetching={pagination.isFetching}
           nextPageUrl={pagination.nextPageUrl}
-          onLoadMoreClick={url => dispatch(githubAction.FetchStarred({login, nextPageUrl: url}))}
+          onLoadMoreClick={url => dispatch($github.FetchStarred({login, nextPageUrl: url}))}
           loadingLabel={`Loading ${login}'s starred...'`}
         >
           {({repo, owner}) => <RepoItem key={repo.fullName} repo={repo} owner={owner} />}

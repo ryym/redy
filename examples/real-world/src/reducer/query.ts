@@ -1,14 +1,11 @@
 import {defineReducer, onAny} from 'redy';
-import {searchAction} from '../actions/search';
-import {githubAction} from '../actions/github';
+import {$search} from '../actions/search';
+import {$github} from '../actions/github';
 
 export const reduceQuery = defineReducer('', [
-  onAny([searchAction.InputQuery, searchAction.SearchDone], (_, query) => query),
+  onAny([$search.InputQuery, $search.SearchDone], (_, query) => query),
 
-  onAny([githubAction.FetchUserBegun, githubAction.FetchStarredBegun], (_, login) => login),
+  onAny([$github.FetchUserBegun, $github.FetchStarredBegun], (_, login) => login),
 
-  onAny(
-    [githubAction.FetchRepoBegun, githubAction.FetchStargazersBegun],
-    (_, fullName) => fullName,
-  ),
+  onAny([$github.FetchRepoBegun, $github.FetchStargazersBegun], (_, fullName) => fullName),
 ]);
