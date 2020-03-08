@@ -18,7 +18,7 @@ export type RedyAction<T, P, E> = {
   };
 };
 
-export type RedyActionPromiseAccessor<E> = E extends Thunk<any, infer R>
+export type RedyActionPromiseAccessor<E> = E extends Thunk<any, infer R, any>
   ? () => Promise<R>
   : undefined;
 
