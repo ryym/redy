@@ -15,15 +15,14 @@ export function on<S, P>(
   return {actionTypes: [creator.actionType], updater};
 }
 
-export function onAny<S, P1, P2>(
-  creators: [AnyActionCreator<P1>, AnyActionCreator<P2>],
-  updater: StateUpdater<S, P1 | P2>,
-): UpdaterMapping<S, P1 | P2>;
+export type Payloads<Cs extends AnyActionCreator<any>[]> = Cs extends AnyActionCreator<infer P>[]
+  ? P
+  : never;
 
-export function onAny<S, P1, P2, P3>(
-  creators: [AnyActionCreator<P1>, AnyActionCreator<P2>, AnyActionCreator<P3>],
-  updater: StateUpdater<S, P1 | P2 | P3>,
-): UpdaterMapping<S, P1 | P2 | P3>;
+export function onAny<S, Cs extends AnyActionCreator<any>[]>(
+  creators: Cs,
+  updater: StateUpdater<S, Payloads<Cs>>,
+): UpdaterMapping<S, Payloads<Cs>>;
 
 export function onAny(creators: any, updater: any) {
   return {actionTypes: creators.map((c: any) => c.actionType), updater};

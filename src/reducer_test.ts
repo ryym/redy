@@ -28,22 +28,31 @@ it('creates reducer function', () => {
 });
 
 it('handles multiple actions by same function', () => {
+  type Hi = {
+    name: string;
+    hi: number;
+  };
+  type Hello = {
+    name: string;
+    hello: number;
+  };
+
   const $greet = defineActions('greet', {
-    Hi: (name: string) => name,
-    Hello: (name: string) => name,
+    Hi: (hi: Hi) => hi,
+    Hello: (hello: Hello) => hello,
     GoodBye: () => {},
   });
 
   const reduce = defineReducer('', [
-    onAny([$greet.Hi, $greet.Hello], (me, name) => {
-      return `Hi ${name}, I am ${me}!`;
+    onAny([$greet.Hi, $greet.Hello], (me, greet) => {
+      return `Hi ${greet.name}, I am ${me}!`;
     }),
     on($greet.GoodBye, () => 'See you again!'),
   ]);
 
   expect(reduce('', $greet.GoodBye())).toEqual('See you again!');
-  expect(reduce('Alice', $greet.Hi('Bob'))).toEqual('Hi Bob, I am Alice!');
-  expect(reduce('Alice', $greet.Hello('Bob'))).toEqual('Hi Bob, I am Alice!');
+  expect(reduce('Alice', $greet.Hi({name: 'Bob', hi: 0}))).toEqual('Hi Bob, I am Alice!');
+  expect(reduce('Alice', $greet.Hello({name: 'Bob', hello: 0}))).toEqual('Hi Bob, I am Alice!');
 });
 
 it('is combinable', () => {
